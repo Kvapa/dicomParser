@@ -1,7 +1,7 @@
-import ByteStream from './byteStream.js';
-import DataSet from './dataSet.js';
-import littleEndianByteArrayParser from './littleEndianByteArrayParser.js';
-import readDicomElementExplicit from './readDicomElementExplicit.js';
+import ByteStream from "./byteStream.js";
+import DataSet from "./dataSet.js";
+import littleEndianByteArrayParser from "./littleEndianByteArrayParser.js";
+import readDicomElementExplicit from "./readDicomElementExplicit.js";
 
 /**
  * Parses a DICOM P10 byte array and returns a DataSet object with the parsed elements.  If the options
@@ -15,24 +15,34 @@ import readDicomElementExplicit from './readDicomElementExplicit.js';
  *         elements successfully parsed before the error.
  */
 
-export default function readPart10Header (byteArray, options) {
+export default function readPart10Header(byteArray, options) {
   if (byteArray === undefined) {
-    throw 'dicomParser.readPart10Header: missing required parameter \'byteArray\'';
+    console.log(
+      "dicomParser.readPart10Header: missing required parameter 'byteArray'"
+    );
   }
 
-  const littleEndianByteStream = new ByteStream(littleEndianByteArrayParser, byteArray);
+  const littleEndianByteStream = new ByteStream(
+    littleEndianByteArrayParser,
+    byteArray
+  );
 
-  function readPrefix () {
+  let noDicm = false;
+
+  function readPrefix() {
     littleEndianByteStream.seek(128);
     const prefix = littleEndianByteStream.readFixedString(4);
 
-    if (prefix !== 'DICM') {
-      throw 'dicomParser.readPart10Header: DICM prefix not found at location 132 - this is not a valid DICOM P10 file.';
+    if (prefix !== "DICM") {
+      console.log(
+        "dicomParser.readPart10Header: DICM prefix not found at location 132 - this is not a valid DICOM P10 file."
+      );
+      noDicm = true;
     }
   }
 
   // main function here
-  function readTheHeader () {
+  function readTheHeader() {
     // Per the DICOM standard, the header is always encoded in Explicit VR Little Endian (see PS3.10, section 7.1)
     // so use littleEndianByteStream throughout this method regardless of the transfer syntax
     readPrefix();
@@ -40,11 +50,16 @@ export default function readPart10Header (byteArray, options) {
     const warnings = [];
     const elements = {};
 
-    while (littleEndianByteStream.position < littleEndianByteStream.byteArray.length) {
+    while (
+      littleEndianByteStream.position < littleEndianByteStream.byteArray.length
+    ) {
       const position = littleEndianByteStream.position;
-      const element = readDicomElementExplicit(littleEndianByteStream, warnings);
+      const element = readDicomElementExplicit(
+        littleEndianByteStream,
+        warnings
+      );
 
-      if (element.tag > 'x0002ffff') {
+      if (element.tag > "x0002ffff") {
         littleEndianByteStream.position = position;
         break;
       }
@@ -54,10 +69,13 @@ export default function readPart10Header (byteArray, options) {
       elements[element.tag] = element;
     }
 
-    const metaHeaderDataSet = new DataSet(littleEndianByteStream.byteArrayParser, littleEndianByteStream.byteArray, elements);
-
+    const metaHeaderDataSet = new DataSet(
+      littleEndianByteStream.byteArrayParser,
+      littleEndianByteStream.byteArray,
+      elements
+    );
     metaHeaderDataSet.warnings = littleEndianByteStream.warnings;
-    metaHeaderDataSet.position = littleEndianByteStream.position;
+    metaHeaderDataSet.position = noDicm ? 0 : littleEndianByteStream.position;
 
     return metaHeaderDataSet;
   }

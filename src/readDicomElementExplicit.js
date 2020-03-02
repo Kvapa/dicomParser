@@ -1,30 +1,36 @@
-import findEndOfEncapsulatedElement from './findEndOfEncapsulatedPixelData.js';
-import findAndSetUNElementLength from './findAndSetUNElementLength.js';
-import readSequenceItemsImplicit  from './readSequenceElementImplicit.js';
-import readTag from './readTag.js';
-import findItemDelimitationItemAndSetElementLength from './findItemDelimitationItem.js';
-import readSequenceItemsExplicit from './readSequenceElementExplicit.js';
+import findEndOfEncapsulatedElement from "./findEndOfEncapsulatedPixelData.js";
+import findAndSetUNElementLength from "./findAndSetUNElementLength.js";
+import readSequenceItemsImplicit from "./readSequenceElementImplicit.js";
+import readTag from "./readTag.js";
+import findItemDelimitationItemAndSetElementLength from "./findItemDelimitationItem.js";
+import readSequenceItemsExplicit from "./readSequenceElementExplicit.js";
 
 /**
  * Internal helper functions for for parsing DICOM elements
  */
 
-const getDataLengthSizeInBytesForVR = (vr) => {
-  if (vr === 'OB' ||
-      vr === 'OW' ||
-      vr === 'SQ' ||
-      vr === 'OF' ||
-      vr === 'UT' ||
-      vr === 'UN') {
+const getDataLengthSizeInBytesForVR = vr => {
+  if (
+    vr === "OB" ||
+    vr === "OW" ||
+    vr === "SQ" ||
+    vr === "OF" ||
+    vr === "UT" ||
+    vr === "UN"
+  ) {
     return 4;
   }
 
   return 2;
 };
 
-export default function readDicomElementExplicit (byteStream, warnings, untilTag) {
+export default function readDicomElementExplicit(
+  byteStream,
+  warnings,
+  untilTag
+) {
   if (byteStream === undefined) {
-    throw 'dicomParser.readDicomElementExplicit: missing required parameter \'byteStream\'';
+    throw "dicomParser.readDicomElementExplicit: missing required parameter 'byteStream'";
   }
 
   const element = {
@@ -54,18 +60,18 @@ export default function readDicomElementExplicit (byteStream, warnings, untilTag
   }
 
   // if VR is SQ, parse the sequence items
-  if (element.vr === 'SQ') {
+  if (element.vr === "SQ") {
     readSequenceItemsExplicit(byteStream, element, warnings);
 
     return element;
   }
 
   if (element.length === 4294967295) {
-    if (element.tag === 'x7fe00010') {
+    if (element.tag === "x7fe00010") {
       findEndOfEncapsulatedElement(byteStream, element, warnings);
 
       return element;
-    } else if (element.vr === 'UN') {
+    } else if (element.vr === "UN") {
       readSequenceItemsImplicit(byteStream, element);
 
       return element;
