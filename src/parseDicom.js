@@ -186,7 +186,6 @@ export default function parseDicom(byteArray, options) {
   function parseTheByteStream() {
     const metaHeaderDataSet = readPart10Header(byteArray, options);
     const dataSet = readDataSet(metaHeaderDataSet);
-    console.log(metaHeaderDataSet, dataSet);
     return mergeDataSets(metaHeaderDataSet, dataSet);
   }
 
