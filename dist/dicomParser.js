@@ -1,4 +1,4 @@
-/*! dicom-parser - 1.8.3 - 2020-03-05 | (c) 2017 Chris Hafey | https://github.com/cornerstonejs/dicomParser */
+/*! dicom-parser - 1.8.3 - 2020-03-11 | (c) 2017 Chris Hafey | https://github.com/cornerstonejs/dicomParser */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
